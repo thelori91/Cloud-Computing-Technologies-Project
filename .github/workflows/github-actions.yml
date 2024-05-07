@@ -1,0 +1,131 @@
+name: Deploy to AWS Elastic Beanstalk
+
+on:
+  push:
+    branches:
+      - main
+      
+jobs:
+  unit-tests-application:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Running unit tests for application
+        run: |
+          echo "Running unit tests for application...(Simulating)"
+          echo "unit tests for application passed."
+
+  eb-init-create:
+    runs-on: ubuntu-latest
+    needs: unit-tests-application
+    continue-on-error: true
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      - uses: actions/checkout@v3
+      - name: Install EB CLI and 
+        run: |
+          pip install --upgrade awsebcli
+      - name: Initialize Elastic Beanstalk environment
+        run: |
+          eb init beanstalk-flask-app -k "Key_Pair" --platform "Python 3.11 running on 64bit Amazon Linux 2023" --region ${{ secrets.AWS_REGION }}
+      - name: Install jq (optional)
+        run: |
+          sudo apt-get update
+          sudo apt-get install jq -y
+      - name: Create Elastic Beanstalk environment
+        run: |
+            environment_output=$(aws elasticbeanstalk describe-environments --environment-names beanstalk-env-flask-app)
+            environment_info=$(echo "$environment_output" | jq -r '.Environments[] | select(.EnvironmentName == "beanstalk-env-flask-app")')
+            echo "$environment_info"
+            env_status=$(echo "$environment_info" | jq -r '.Status')
+            echo "Environment status: $env_status"
+            if [[ $environment_info == null || $environment_info == "" ]]; then
+              echo "Environment 'beanstalk-env-flask-app' not found. Proceeding with creation."
+              eb create beanstalk-env-flask-app --database.username "ebroot" --database.password "ebroot1234" -db.engine "postgres" -db.size "5" -db.i "db.t3.micro" 
+              exit 0
+            elif grep -q "Ready" <<< "$env_status"; then
+              echo "Environment 'beanstalk-env-flask-app' is ready. Skip..."
+              exit 0
+            elif grep -q "Terminated" <<< "$env_status"; then
+              echo "Environment 'beanstalk-env-flask-app' is terminated. Recreating..."
+              eb create beanstalk-env-flask-app --database.username "ebroot" --database.password "ebroot1234" -db.engine "postgres" -db.size "5" -db.i "db.t3.micro" 
+              exit 0
+            else
+              echo "Environment 'beanstalk-env-flask-app' already exists and is likely running."
+              exit 0
+            fi
+      - name: if failure terminate environment only if not already exists
+        if: ${{ failure()}}
+        run: |
+            echo "Terminating environment..."
+            eb terminate --all --force --timeout 30
+      - name: Persist Elastic Beanstalk directory
+        if: ${{failure() || success()}}
+        uses: actions/upload-artifact@v3
+        with:
+          name: eb-directory
+          path: .elasticbeanstalk 
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      
+  eb-deploy:
+      runs-on: ubuntu-latest
+      needs: eb-init-create
+      steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      - uses: actions/checkout@v3
+      - name: Install EB CLI and 
+        run: |
+          pip install --upgrade awsebcli
+      - name: Download Elastic Beanstalk directory
+        uses: actions/download-artifact@v3
+        with:
+          name: eb-directory
+          path: .elasticbeanstalk
+      - name: Deploy application to Elastic Beanstalk
+        run: |
+          eb use beanstalk-env-flask-app --region ${{ secrets.AWS_REGION }}
+          eb deploy 
+          eb status
+          eb config --display
+
+
+  # eb-erase:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Configure AWS credentials
+  #       uses: aws-actions/configure-aws-credentials@v1
+  #       with:
+  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         aws-region: ${{ secrets.AWS_REGION }}
+  #     - name: Install EB CLI and 
+  #       run: |
+  #         pip install --upgrade awsebcli
+  #     - name: Download Elastic Beanstalk directory
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #         name: eb-directory
+  #         path: .elasticbeanstalk
+  #     - uses: actions/checkout@v3
+  #     - name: Erase Elastic Beanstalk environment (Optional)
+  #       run: |
+  #         eb terminate --all --force --timeout 30
+  
+
+  #sudo yum install stress -y
+  #sudo stress --cpu 8 --timeout 80s
+

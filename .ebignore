@@ -1,0 +1,11 @@
+./.github
+.github
+./terraform
+terraform
+*.yml
+Dockerfile
+*.sql
+LICENSE
+.gitignore
+.git
+README.md

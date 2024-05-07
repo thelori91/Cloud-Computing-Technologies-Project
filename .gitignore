@@ -1,0 +1,6 @@
+*.zip
+.terraform
+.terraform.lock.hcl
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml

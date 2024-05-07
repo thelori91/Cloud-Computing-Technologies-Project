@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Storage</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <h1 class="mb-4 text-center">Number Storage</h1>
+                <form method="POST">
+                    <div class="form-group">
+                        <label for="number">Enter a number:</label>
+                        <input type="number" class="form-control" id="number" name="number" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" name="action" value="insert">Submit</button>
+                </form>
+                <hr>
+                <form method="GET">
+                    <button type="submit" class="btn btn-secondary" name="action" value="retrieve">Retrieve All Numbers</button>
+                </form>
+                <hr>
+                <form method="POST">
+                    <button type="submit" class="btn btn-danger" name="action" value="erase">Erase All Content</button>
+                </form>
+                {% if show_numbers %}
+                <hr>
+                <h2 class="mt-4">Stored Numbers</h2>
+                <ul class="list-group">
+                    {% for number in numbers %}
+                    <li class="list-group-item">{{ number[1] }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <p><b>Instance:</b> {{ instance_id }}</p>
+                </div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
