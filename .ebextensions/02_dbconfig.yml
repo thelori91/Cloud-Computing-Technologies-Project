@@ -1,0 +1,11 @@
+Resources:
+    AWSEBRDSDatabase:
+        Type: AWS::RDS::DBInstance
+        Properties:
+            AllocatedStorage: 5
+            DBInstanceClass: db.t3.micro
+            DBName: myawesomeapp
+            Engine: postgres
+            EngineVersion: 9.4.4
+            MasterUsername: ebroot
+            MasterUserPassword: ebroot1234

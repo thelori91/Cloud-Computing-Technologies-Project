@@ -48,14 +48,14 @@ jobs:
             echo "Environment status: $env_status"
             if [[ $environment_info == null || $environment_info == "" ]]; then
               echo "Environment 'beanstalk-env-flask-app' not found. Proceeding with creation."
-              eb create beanstalk-env-flask-app --database.username "ebroot" --database.password "ebroot1234" -db.engine "postgres" -db.size "5" -db.i "db.t3.micro" 
+              eb create beanstalk-env-flask-app --database.username ${{secrets.DB_USR}} --database.password ${{secrets.DB_PSW}} -db.engine "postgres" -db.size "5" -db.i "db.t3.micro" 
               exit 0
             elif grep -q "Ready" <<< "$env_status"; then
               echo "Environment 'beanstalk-env-flask-app' is ready. Skip..."
               exit 0
             elif grep -q "Terminated" <<< "$env_status"; then
               echo "Environment 'beanstalk-env-flask-app' is terminated. Recreating..."
-              eb create beanstalk-env-flask-app --database.username "ebroot" --database.password "ebroot1234" -db.engine "postgres" -db.size "5" -db.i "db.t3.micro" 
+              eb create beanstalk-env-flask-app --database.username ${{secrets.DB_USR}} --database.password ${{secrets.DB_PSW}} -db.engine "postgres" -db.size "5" -db.i "db.t3.micro" 
               exit 0
             else
               echo "Environment 'beanstalk-env-flask-app' already exists and is likely running."
@@ -101,7 +101,6 @@ jobs:
           eb deploy 
           eb status
           eb config --display
-
 
   # eb-erase:
   #   runs-on: ubuntu-latest

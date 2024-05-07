@@ -1,4 +1,5 @@
 *.zip
+.DS_STORE
 .terraform
 .terraform.lock.hcl
 .elasticbeanstalk/*
