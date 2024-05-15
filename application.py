@@ -73,11 +73,3 @@ except Exception as e:
 
 if __name__ == '__main__':
     application.run(host='0.0.0.0', port=5000)
-
-# Fault tolerance
-# Scalability and Realability
-# Sicurezza
-# Clustering
-# Rilevamento dei guasti e ripristino automatico
- 
-# Amazon RDS: https://aws.amazon.com/rds/ per un database gestito altamente scalabile.

@@ -124,7 +124,7 @@ jobs:
   #       run: |
   #         eb terminate --all --force --timeout 30
   
-
-  #sudo yum install stress -y
-  #sudo stress --cpu 8 --timeout 80s
+#STRESS TEST for EC2
+#sudo yum install stress -y
+#sudo stress --cpu 8 --timeout 80s
 
